@@ -1,0 +1,35 @@
+# Node dependencies
+**/node_modules/
+
+# Environment and Secrets
+**/.env
+**/firebase-service-account.json
+
+# Build files
+**/dist/
+**/dist-ssr/
+**/build/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Project-specific folders
+**/scratch/
+**/uploads/
+
+# Firebase logs
+firebase-debug.log*
+.firebase/

@@ -12,7 +12,7 @@ import EXIF from 'exif-js';
 import imageCompression from 'browser-image-compression';
 import { useVirtualizer } from '@tanstack/react-virtual';
 
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = 'https://geoaid-intelligence.onrender.com/api';
 
 // ── Haversine (client-side fallback) ─────────────────────────────────────────
 function haversineKm(lat1, lon1, lat2, lon2) {
@@ -528,7 +528,7 @@ export default function NgoPortal({
       const formData = new FormData();
       formData.append('image', processedFile);
 
-      const response = await fetch('http://localhost:5000/api/scan-sync', {
+      const response = await fetch('https://geoaid-intelligence.onrender.com/api/scan-sync', {
         method: 'POST',
         body: formData,
       });
@@ -545,28 +545,26 @@ export default function NgoPortal({
       // Update with OCR result first
       setMissions(prev => prev.map(s => s.id === newId ? { ...s, rawOcr, isProcessing: true } : s));
 
-      // AI Summarization
-      if (ocrSuccess) {
+      // AI Summarization (Now from Backend Gemini)
+      if (ocrSuccess && data.ai) {
         try {
           setOcrStage('Generating Intelligence...');
-          const ai = await summarizeWithClaude(rawOcr);
+          const ai = data.ai; // Use backend AI result
+          
           // Update in-memory state
           setMissions(prev => prev.map(s => s.id === newId ? { ...s, ai, isProcessing: false } : s));
+          
           // Persist to MongoDB
           try {
             if (token) {
               const body = {
-                title: ai.needs?.[0] || rawOcr.slice(0, 40) || 'OCR Task',
+                title: ai.tags?.[0] || ai.category || rawOcr.slice(0, 40) || 'OCR Task',
                 location: ai.location || 'Unknown',
                 urgency: ai.urgency || 'Medium',
                 aiSummary: ai.summary || '',
                 rawOcr,
-                // Intelligence Slate fields
-                category: ai.slate?.category || 'Other',
-                quantity: ai.slate?.quantity ?? null,
-                unit: ai.slate?.unit || '',
-                urgencyScore: ai.slate?.urgencyScore || 3,
-                locationHint: ai.slate?.locationHint || '',
+                category: ai.category || 'Other',
+                tags: ai.tags || []
               };
               const res = await fetch(`${API_BASE}/tasks`, {
                 method: 'POST',
@@ -574,15 +572,14 @@ export default function NgoPortal({
                 body: JSON.stringify(body),
               });
               const saved = await res.json();
-              const task = saved?.task || saved;
-              if (task?._id) {
+              if (saved?.task?._id || saved?._id) {
                 if (fetchTasks) await fetchTasks();
                 setMissions(prev => prev.filter(s => s.id !== newId));
               }
             }
           } catch (dbErr) { console.warn('DB persist failed, keeping local:', dbErr); }
         } catch (aiError) {
-          console.error('AI summarization failed:', aiError);
+          console.error('AI processing failed:', aiError);
           setMissions(prev => prev.map(s => s.id === newId ? { ...s, isProcessing: false } : s));
         }
       } else {

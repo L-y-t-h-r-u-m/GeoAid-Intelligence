@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, Mail, Lock, User, Phone } from 'lucide-react';
 
-const API_URL = 'http://localhost:5000/api/auth';
+const API_URL = 'https://geoaid-intelligence.onrender.com/api/auth';
 
 export default function AuthModal({ onClose, onLogin }) {
   const [view, setView] = useState('login'); // 'login', 'register', 'forgot', 'reset'

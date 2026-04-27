@@ -5,7 +5,7 @@ import ImpactStats from './components/ImpactStats';
 import ProfileLeaderboard from './components/ProfileLeaderboard';
 import AuthModal from './components/AuthModal';
 
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = 'https://geoaid-intelligence.onrender.com/api';
 
 function App() {
   const [currentView, setCurrentView] = useState('dashboard');

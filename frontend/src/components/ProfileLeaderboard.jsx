@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, CheckCircle2, User, Calendar, MapPin, Activity } from 'lucide-react';
 
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = 'https://geoaid-intelligence.onrender.com/api';
 
 function haversineKm([lat1, lon1], [lat2, lon2]) {
   if (!lat1 || !lon1 || !lat2 || !lon2) return 0;

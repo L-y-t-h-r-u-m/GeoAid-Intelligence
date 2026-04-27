@@ -92,7 +92,7 @@ function SkillPanel({ skills, onChange, onClose }) {
   );
 }
 
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = 'https://geoaid-intelligence.onrender.com/api';
 
 // ── Main Dashboard ────────────────────────────────────────────────────────────
 export default function Dashboard({ 
@@ -600,11 +600,25 @@ export default function Dashboard({
                 </div>
                 <h3 className="font-bold text-slate-800 dark:text-white text-base leading-tight truncate max-w-[200px]">{ongoingTask.title}</h3>
               </div>
-              <button onClick={() => {
-                setMissions(prev => prev.map(m => m.id === ongoingTask.id ? { ...m, status: 'Moderation' } : m));
-                setOngoingTask(null);
-                setActiveTask(null);
-              }} className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 shadow-lg shadow-emerald-500/30 text-white font-bold text-sm transition-all active:scale-95 flex items-center gap-2">
+              <button 
+                onClick={async () => {
+                  const id = ongoingTask._id || ongoingTask.id;
+                  try {
+                    if (token) {
+                      await fetch(`${API_BASE}/tasks/${id}/complete`, {
+                        method: 'POST',
+                        headers: { Authorization: `Bearer ${token}` }
+                      });
+                    }
+                    if (fetchTasks) await fetchTasks();
+                    setOngoingTask(null);
+                    setActiveTask(null);
+                  } catch (err) {
+                    console.error('Failed to complete task:', err);
+                  }
+                }} 
+                className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 shadow-lg shadow-emerald-500/30 text-white font-bold text-sm transition-all active:scale-95 flex items-center gap-2"
+              >
                 <CheckCircle2 className="w-4 h-4" />
                 Complete Task
               </button>

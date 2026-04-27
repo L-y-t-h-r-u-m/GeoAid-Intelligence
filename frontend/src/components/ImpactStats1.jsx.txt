@@ -1,0 +1,268 @@
+import React, { useEffect } from 'react';
+import { motion, useSpring, useTransform } from 'framer-motion';
+import {
+  LineChart, Line, XAxis, YAxis, CartesianGrid,
+  Tooltip, ResponsiveContainer, Legend
+} from 'recharts';
+import { 
+  Search, Home, Building2, BarChart3, User 
+} from 'lucide-react';
+
+// ── Data ──────────────────────────────────────────────────────────────────────
+
+const RESOURCES = [
+  { label: 'Food Packets', needed: 2400, available: 1450, color: '#3B82F6', darkColor: '#60A5FA' },
+  { label: 'Water (L)',    needed: 8000, available: 5200, color: '#6366F1', darkColor: '#818CF8' },
+  { label: 'Blankets',    needed: 900,  available: 620,  color: '#22C55E', darkColor: '#4ADE80' },
+  { label: 'Medical Kits',needed: 500,  available: 320,  color: '#F59E0B', darkColor: '#FCD34D' },
+  { label: 'Tarpaulins',  needed: 300,  available: 190,  color: '#EC4899', darkColor: '#F472B6' },
+];
+
+const TREND_DATA = [
+  { day: 'Mon', accepted: 12, completed: 8  },
+  { day: 'Tue', accepted: 9,  completed: 6  },
+  { day: 'Wed', accepted: 18, completed: 14 },
+  { day: 'Thu', accepted: 15, completed: 11 },
+  { day: 'Fri', accepted: 24, completed: 19 },
+  { day: 'Sat', accepted: 31, completed: 26 },
+  { day: 'Sun', accepted: 28, completed: 23 },
+];
+
+// ── Animated counter ──────────────────────────────────────────────────────────
+function AnimatedNumber({ value }) {
+  const spring = useSpring(0, { mass: 1, stiffness: 60, damping: 22 });
+  const display = useTransform(spring, v => Math.round(v).toLocaleString());
+  useEffect(() => { spring.set(value); }, [spring, value]);
+  return <motion.span>{display}</motion.span>;
+}
+
+// ── Supply Gap Row ────────────────────────────────────────────────────────────
+function GapRow({ item, index }) {
+  const pct     = Math.round(item.available / item.needed * 100);
+  const deficit = item.needed - item.available;
+  const critical = pct < 65;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -10 }}
+      animate={{ opacity: 1,  x: 0   }}
+      transition={{ delay: index * 0.07 }}
+      className="flex flex-col gap-1.5"
+    >
+      <div className="flex justify-between text-xs">
+        <span className="font-medium text-slate-700 dark:text-slate-200">{item.label}</span>
+        <span className={critical ? 'text-rose-500 font-bold' : 'text-slate-400'}>
+          −{deficit.toLocaleString()} short
+        </span>
+      </div>
+      <div className="h-1.5 w-full rounded-full bg-slate-200/60 dark:bg-slate-700/40 overflow-hidden">
+        <motion.div
+          className="h-full rounded-full bg-indigo-500"
+          style={{ opacity: critical ? 1 : 0.55 }}
+          initial={{ width: 0 }}
+          animate={{ width: `${pct}%` }}
+          transition={{ duration: 0.9, ease: 'easeOut', delay: index * 0.07 + 0.2 }}
+        />
+      </div>
+      <div className="flex justify-between text-[10px] text-slate-400">
+        <span>{item.available.toLocaleString()} available</span>
+        <span>{pct}% met</span>
+      </div>
+    </motion.div>
+  );
+}
+
+// ── Main Page ─────────────────────────────────────────────────────────────────
+export default function ImpactStats({ navigateToMap, navigateToPortal, navigateToAnalytics, navigateToUsers, isDarkMode, toggleTheme }) {
+  const criticalGaps    = RESOURCES.filter(r => r.available / r.needed < 0.65).length;
+  const totalCompleted  = TREND_DATA.reduce((s, d) => s + d.completed, 0);
+
+  const card = 'bg-white dark:bg-slate-800 shadow-xl border border-slate-200/50 dark:border-slate-700/50 rounded-3xl';
+
+  return (
+    <div className="relative w-full h-screen overflow-hidden bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-sans transition-colors duration-300">
+
+      {/* ── Top Nav (Floating Dashboard style) ── */}
+      <header className="absolute top-6 left-6 right-6 z-20 flex justify-between items-center pointer-events-none">
+        
+        <div className="flex items-center gap-3 pointer-events-auto shrink-0 mr-6">
+          <div className="hidden sm:block">
+            <h1 className="text-xl font-bold tracking-tight text-slate-800 dark:text-white pointer-events-auto flex items-center gap-2">
+              <Activity className="w-5 h-5 text-emerald-500 shrink-0" />
+              Impact Analytics
+            </h1>
+          </div>
+        </div>
+
+        <div className="flex-1 w-full max-w-xl pointer-events-auto" />
+        
+        <div className="flex gap-4 pointer-events-auto shrink-0">
+          <button onClick={toggleTheme} className="w-12 h-12 flex items-center justify-center rounded-full bg-white/70 dark:bg-slate-800/80 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 hover:bg-white dark:hover:bg-slate-700/50 shadow-lg transition-all text-slate-500 dark:text-slate-400">
+            {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          </button>
+          <div className="w-12 h-12 flex items-center justify-center rounded-full bg-indigo-500/10 text-indigo-500 shadow-lg backdrop-blur-xl border border-indigo-500/20">
+            <BarChart3 className="w-5 h-5" />
+          </div>
+        </div>
+      </header>
+
+      {/* ── Sidebar (Floating Dashboard style) ── */}
+      <nav className="absolute left-6 top-1/2 -translate-y-1/2 z-30 pointer-events-auto">
+        <ul className="bg-white/70 dark:bg-slate-800/80 backdrop-blur-2xl border border-slate-200 dark:border-slate-700/50 rounded-full p-2 flex flex-col gap-2 shadow-2xl">
+          {[
+            { icon: <Home className="w-5 h-5" />, id: 'home' },
+            { icon: <Building2 className="w-5 h-5" />, id: 'ngo' },
+            { icon: <BarChart3 className="w-5 h-5" />, active: true, id: 'analytics' },
+            { icon: <User className="w-5 h-5" />, id: 'users' },
+          ].map((item, idx) => (
+            <li key={idx}>
+              <button
+                onClick={() => {
+                  if (item.id === 'home' && navigateToMap) navigateToMap();
+                  if (item.id === 'ngo' && navigateToPortal) navigateToPortal();
+                  if (item.id === 'analytics' && navigateToAnalytics) navigateToAnalytics();
+                  if (item.id === 'users' && navigateToUsers) navigateToUsers();
+                }}
+                className={`w-12 h-12 flex items-center justify-center rounded-full transition-all ${
+                  item.active  ? 'bg-indigo-500 text-white shadow-md shadow-indigo-500/30' :
+                  'text-slate-500 dark:text-slate-400 hover:bg-white/50 dark:hover:bg-slate-700/50'
+                }`}>
+                {item.icon}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      {/* ── Main Content Area ── */}
+      <main className="w-full h-full overflow-y-auto pt-28 pl-32 pr-8 pb-12 no-scrollbar">
+        <div className="max-w-6xl mx-auto grid grid-cols-12 gap-6">
+
+          {/* ── Stat: Critical Gaps ── */}
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0 }}
+            className={`col-span-12 md:col-span-4 ${card} p-8 flex flex-col justify-between min-h-[140px]`}>
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-xs font-bold uppercase tracking-widest text-slate-400">Critical Gaps</span>
+              <div className="w-8 h-8 rounded-full bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center">
+                <AlertTriangle className="w-4 h-4 text-amber-500" />
+              </div>
+            </div>
+            <div>
+              <div className="text-5xl font-extrabold text-slate-800 dark:text-white leading-none">
+                <AnimatedNumber value={criticalGaps} />
+              </div>
+              <p className="text-xs text-amber-500 mt-2 font-medium">Resources below 65% supply</p>
+            </div>
+          </motion.div>
+
+          {/* ── Stat: Tasks Completed ── */}
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }}
+            className={`col-span-12 md:col-span-4 ${card} p-8 flex flex-col justify-between min-h-[140px]`}>
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-xs font-bold uppercase tracking-widest text-slate-400">Tasks Completed</span>
+              <div className="w-8 h-8 rounded-full bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center">
+                <TrendingUp className="w-4 h-4 text-blue-500" />
+              </div>
+            </div>
+            <div>
+              <div className="text-5xl font-extrabold text-slate-800 dark:text-white leading-none">
+                <AnimatedNumber value={totalCompleted} />
+              </div>
+              <p className="text-xs text-blue-500 mt-2 font-medium">Community tasks resolved</p>
+            </div>
+          </motion.div>
+
+          {/* ── Stat: Verification Rate ── */}
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.16 }}
+            className={`col-span-12 md:col-span-4 ${card} p-8 flex flex-col justify-between min-h-[140px]`}>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-bold uppercase tracking-widest text-slate-400">Verification Rate</span>
+              <div className="w-8 h-8 rounded-full bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center">
+                <Target className="w-4 h-4 text-emerald-500" />
+              </div>
+            </div>
+            <div className="mt-auto">
+              <div className="flex justify-between items-end mb-2">
+                <span className="text-3xl font-extrabold text-slate-800 dark:text-white">83%</span>
+                <span className="text-[11px] font-bold text-emerald-500">24 / 29 GPS-mapped</span>
+              </div>
+              <div className="h-2 w-full bg-slate-100 dark:bg-slate-700/60 rounded-full overflow-hidden">
+                <motion.div className="h-full bg-emerald-500 rounded-full"
+                  initial={{ width: 0 }}
+                  animate={{ width: '83%' }}
+                  transition={{ duration: 1.2, ease: 'easeOut', delay: 0.4 }}
+                />
+              </div>
+              <p className="text-[10px] text-slate-400 mt-2">Smart GPS verification active</p>
+            </div>
+          </motion.div>
+
+          {/* ── Supply vs Demand ── */}
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.24 }}
+            className={`col-span-12 ${card} p-8`}>
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-sm font-bold text-slate-800 dark:text-slate-100">Supply vs Demand</h2>
+              <span className="text-[10px] uppercase font-bold tracking-wider bg-slate-100 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 px-3 py-1.5 rounded-full">Global Deficit</span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-6">
+              {RESOURCES.map((r, i) => <GapRow key={r.label} item={r} index={i} />)}
+            </div>
+          </motion.div>
+
+          {/* ── Weekly Task Trend ── */}
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.38 }}
+            className={`col-span-12 ${card} p-8`}>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-sm font-bold text-slate-800 dark:text-slate-100">Weekly Task Resolution Velocity</h2>
+              <span className="text-[10px] uppercase font-bold tracking-wider bg-indigo-50 dark:bg-indigo-500/10 text-indigo-500 dark:text-indigo-400 px-3 py-1.5 rounded-full">Last 7 Days</span>
+            </div>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={TREND_DATA} margin={{ top: 8, right: 8, left: -24, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDarkMode ? '#1e293b' : '#f1f5f9'} />
+                  <XAxis dataKey="day" stroke={isDarkMode ? '#475569' : '#cbd5e1'} tickLine={false} axisLine={false} fontSize={11} dy={10} />
+                  <YAxis stroke={isDarkMode ? '#475569' : '#cbd5e1'} tickLine={false} axisLine={false} fontSize={11} />
+                  <Tooltip
+                    content={({ active, payload, label }) => {
+                      if (!active || !payload?.length) return null;
+                      return (
+                        <div className={`px-4 py-3 rounded-2xl text-xs shadow-xl border ${
+                          isDarkMode ? 'bg-slate-800 border-slate-700/50 text-slate-200' : 'bg-white border-slate-100 text-slate-700'
+                        }`}>
+                          <p className="font-bold mb-2 text-slate-500 dark:text-slate-400 uppercase tracking-widest text-[10px]">{label}</p>
+                          {payload.map((p, i) => (
+                            <p key={i} className="flex justify-between gap-8">
+                              <span className="text-slate-500">{p.name}</span>
+                              <span className="font-bold text-indigo-500">{p.value}</span>
+                            </p>
+                          ))}
+                        </div>
+                      );
+                    }}
+                    cursor={{ stroke: isDarkMode ? '#334155' : '#e2e8f0', strokeWidth: 1 }}
+                  />
+                  {/* Primary series: solid, full opacity */}
+                  <Line
+                    type="monotone" dataKey="accepted" name="Accepted"
+                    stroke="#6366f1" strokeWidth={2.5} strokeOpacity={1}
+                    dot={false}
+                    activeDot={{ r: 5, fill: '#6366f1', strokeWidth: 0 }}
+                  />
+                  {/* Secondary series: dashed, reduced opacity */}
+                  <Line
+                    type="monotone" dataKey="completed" name="Completed"
+                    stroke="#6366f1" strokeWidth={2.5} strokeOpacity={0.4}
+                    strokeDasharray="5 4"
+                    dot={false}
+                    activeDot={{ r: 5, fill: '#6366f1', strokeWidth: 0 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </motion.div>
+
+        </div>
+      </main>
+    </div>
+  );
+}

@@ -1,5 +1,6 @@
 const { DocumentAnalysisClient, AzureKeyCredential } = require("@azure/ai-form-recognizer");
 const fs = require('fs');
+const { summarizeTask } = require('../utils/gemini');
 require('dotenv').config();
 
 let client;
@@ -36,6 +37,11 @@ exports.processScan = async (req, res) => {
 
     console.log("--- ✨ Extraction Successful! ---");
 
+    // --- 🤖 AI Intelligence with Gemini 1.5 Flash ---
+    console.log("--- 🧠 Gemini Analysis in progress...");
+    const aiResult = await summarizeTask(content);
+    console.log("--- ✅ AI Analysis Complete");
+
     // SAFE CLEANUP: If this fails, we don't want to crash the whole request
     try {
       if (fs.existsSync(filePath)) {
@@ -46,11 +52,11 @@ exports.processScan = async (req, res) => {
       console.error("⚠️ Cleanup Warning (Non-critical):", cleanupError.message);
     }
 
-    // THE FIX: Use 'extractedText' to match your React 'data.extractedText' call
     return res.status(200).json({
       success: true,
-      message: "Data synced successfully",
-      extractedText: content, // Changed from rawText to extractedText
+      message: "Intelligence gathered successfully",
+      extractedText: content,
+      ai: aiResult,
       requiresManualReview: true
     });
 

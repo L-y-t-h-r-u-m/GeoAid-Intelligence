@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Mail, Lock, User, Phone } from 'lucide-react';
+import { X, Mail, Lock, User, Phone, Briefcase } from 'lucide-react';
 
 const API_URL = 'https://geoaid-intelligence.onrender.com/api/auth';
 
@@ -100,8 +100,8 @@ export default function AuthModal({ onClose, onLogin }) {
           {view === 'reset' && 'Set New Password'}
         </h2>
 
-        {error && <div className="p-3 mb-4 text-sm text-rose-600 bg-rose-50 rounded-lg">{error}</div>}
-        {message && <div className="p-3 mb-4 text-sm text-emerald-600 bg-emerald-50 rounded-lg">{message}</div>}
+        {error && <div className="p-3 mb-4 text-sm text-rose-600 bg-rose-50 dark:bg-rose-900/30 dark:text-rose-400 rounded-lg">{error}</div>}
+        {message && <div className="p-3 mb-4 text-sm text-emerald-600 bg-emerald-50 dark:bg-emerald-900/30 dark:text-emerald-400 rounded-lg">{message}</div>}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           
@@ -111,7 +111,7 @@ export default function AuthModal({ onClose, onLogin }) {
               <input
                 type="email" name="email" placeholder="Email Address" required
                 value={formData.email} onChange={handleChange}
-                className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200"
               />
             </div>
           )}
@@ -123,7 +123,7 @@ export default function AuthModal({ onClose, onLogin }) {
                 <input
                   type="text" name="name" placeholder="Full Name" required
                   value={formData.name} onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200"
                 />
               </div>
               <div className="relative">
@@ -131,11 +131,22 @@ export default function AuthModal({ onClose, onLogin }) {
                 <input
                   type="tel" name="phone" placeholder="Phone Number (Optional)"
                   value={formData.phone} onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200"
                 />
               </div>
-              {/* Role selection removed, defaulting to volunteer */}
-
+              <div className="relative">
+                <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <select
+                  name="role"
+                  value={formData.role}
+                  onChange={handleChange}
+                  required
+                  className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-700 dark:text-slate-200 appearance-none cursor-pointer"
+                >
+                  <option value="volunteer">Volunteer</option>
+                  <option value="ngo_admin">NGO Administrator</option>
+                </select>
+              </div>
             </>
           )}
 
@@ -145,7 +156,7 @@ export default function AuthModal({ onClose, onLogin }) {
               <input
                 type="password" name="password" placeholder="Password" required
                 value={formData.password} onChange={handleChange}
-                className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200"
               />
             </div>
           )}
@@ -156,7 +167,7 @@ export default function AuthModal({ onClose, onLogin }) {
               <input
                 type="text" name="otp" placeholder="6-digit OTP Code" required
                 value={formData.otp} onChange={handleChange}
-                className="w-full pl-10 pr-4 py-2 tracking-widest bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full pl-10 pr-4 py-2 tracking-widest bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200"
               />
             </div>
           )}
@@ -167,7 +178,7 @@ export default function AuthModal({ onClose, onLogin }) {
               <input
                 type="password" name="newPassword" placeholder="New Password" required
                 value={formData.newPassword} onChange={handleChange}
-                className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200"
               />
             </div>
           )}
